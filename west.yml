@@ -113,6 +113,11 @@ manifest:
       repo-path: hal_quicklogic
       groups:
         - hal
+    - name: hal_raspberrypi
+      revision: pull/1/head
+      path: modules/hal/raspberrypi
+      groups:
+        - hal
     - name: hal_silabs
       revision: be39d4eebeddac6e18e9c0c3ba1b31ad1e82eaed
       path: modules/hal/silabs
