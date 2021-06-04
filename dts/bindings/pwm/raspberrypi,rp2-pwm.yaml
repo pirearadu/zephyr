@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: RASPBERRYPI PWM
+
+compatible: "raspberrypi,rp2-pwm"
+
+include: [pwm-controller.yaml, base.yaml]
+
+properties:
+    reg:
+      required: true
+
+    label:
+      required: true
+
+    prescaler:
+      type: int
+      required: true
+      description: Divider value used to divide the system clock(125MHz on rpi pico).
+
+    "#pwm-cells":
+      const: 2
+
+pwm-cells:
+  - channel
+  - flags

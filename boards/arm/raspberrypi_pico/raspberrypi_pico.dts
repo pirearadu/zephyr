@@ -23,8 +23,17 @@
 		};
 	};
 
+	pwmleds {
+		compatible = "pwm-leds";
+		pwm_led0: pwm_led_0 {
+			pwms = <&pwm0 25 0>;
+			label = "PWM LED0";
+		};
+	};
+
 	aliases {
 		led0 = &led0;
+		pwm-led0 = &pwm_led0;
 	};
 };
 
@@ -44,4 +53,9 @@
 
 &gpio0 {
 	status = "okay";
+};
+
+&pwm0 {
+	status = "okay";
+	prescaler = <255>;
 };

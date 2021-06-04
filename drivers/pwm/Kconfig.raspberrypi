@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config PWM_RASPBERRYPI
+	bool "Raspberry PWM driver"

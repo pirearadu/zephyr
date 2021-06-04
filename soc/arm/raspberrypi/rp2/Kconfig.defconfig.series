@@ -46,4 +46,8 @@ config GPIO_RASPBERRYPI
 	default y
 	depends on GPIO
 
+config PWM_RASPBERRYPI
+	default y
+	depends on PWM
+
 endif # SOC_SERIES_RP2XXX
