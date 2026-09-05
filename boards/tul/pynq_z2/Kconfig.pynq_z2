@@ -1,0 +1,7 @@
+# TUL PYNQ-Z2 board configuration
+
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_PYNQ_Z2
+	select SOC_XC7Z020

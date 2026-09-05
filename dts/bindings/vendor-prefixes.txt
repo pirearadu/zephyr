@@ -758,6 +758,7 @@ tronfy	Tronfy
 tronsmart	Tronsmart
 truly	Truly Semiconductors Limited
 tsd	Theobroma Systems Design und Consulting GmbH
+tul	TUL Corporation
 tuya	Tuya Inc.
 tyan	Tyan Computer Corporation
 u-blox	u-blox

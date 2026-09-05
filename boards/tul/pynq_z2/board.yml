@@ -1,0 +1,6 @@
+board:
+  name: pynq_z2
+  full_name: PYNQ-Z2
+  vendor: tul
+  socs:
+  - name: xc7z020
