@@ -48,6 +48,32 @@
 			#interrupt-cells = <4>;
 		};
 
+		ttc0: timer@f8001000 {
+			compatible = "xlnx,ttcps";
+			status = "disabled";
+			reg = <0xf8001000 0x1000>;
+			interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL
+				      IRQ_DEFAULT_PRIORITY>,
+				     <GIC_SPI 11 IRQ_TYPE_LEVEL
+				      IRQ_DEFAULT_PRIORITY>,
+				     <GIC_SPI 12 IRQ_TYPE_LEVEL
+				      IRQ_DEFAULT_PRIORITY>;
+			interrupt-names = "irq_0", "irq_1", "irq_2";
+		};
+
+		ttc1: timer@f8002000 {
+			compatible = "xlnx,ttcps";
+			status = "disabled";
+			reg = <0xf8002000 0x1000>;
+			interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL
+				      IRQ_DEFAULT_PRIORITY>,
+				     <GIC_SPI 38 IRQ_TYPE_LEVEL
+				      IRQ_DEFAULT_PRIORITY>,
+				     <GIC_SPI 39 IRQ_TYPE_LEVEL
+				      IRQ_DEFAULT_PRIORITY>;
+			interrupt-names = "irq_0", "irq_1", "irq_2";
+		};
+
 		i2c0: i2c@e0004000 {
 			compatible = "cdns,i2c";
 			reg = <0xe0004000 0x1000>;
