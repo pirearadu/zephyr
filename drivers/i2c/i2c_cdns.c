@@ -5,6 +5,9 @@
  */
 
 #include <zephyr/drivers/clock_control.h>
+#ifdef CONFIG_PINCTRL
+#include <zephyr/drivers/pinctrl.h>
+#endif
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/dt-bindings/i2c/i2c.h>
 #include <zephyr/sys/util.h>
@@ -153,6 +156,9 @@ struct cdns_i2c_config {
 	void (*irq_config_func)(void);
 	const struct device *clock_dev;
 	clock_control_subsys_t clock_subsys;
+#ifdef CONFIG_PINCTRL
+	const struct pinctrl_dev_config *pincfg;
+#endif
 };
 
 /**
@@ -1413,6 +1419,19 @@ static int32_t cdns_i2c_init(const struct device *dev)
 
 	DEVICE_MMIO_MAP(dev, K_MEM_CACHE_NONE);
 
+#ifdef CONFIG_PINCTRL
+	/*
+	 * A board that leaves the multiplexing of the controller's pins to its
+	 * boot loader describes no pin state, which is not an error.
+	 */
+	ret = pinctrl_apply_state(config->pincfg, PINCTRL_STATE_DEFAULT);
+	if (ret < 0 && ret != -ENOENT) {
+		LOG_ERR("Cannot apply the default pin state: %d", ret);
+		goto out;
+	}
+	ret = 0;
+#endif /* CONFIG_PINCTRL */
+
 	(void)k_mutex_init(&i2c_bus->bus_mutex);
 	k_event_init(&i2c_bus->xfer_done);
 
@@ -1480,6 +1499,18 @@ static DEVICE_API(i2c, cdns_i2c_driver_api) = {
  * The input clock is either named by a clock controller or, as the binding has
  * always allowed, given by a node carrying its frequency outright.
  */
+/*
+ * Pin control is optional, so that a board leaving the multiplexing to its boot
+ * loader keeps working unchanged.
+ */
+#ifdef CONFIG_PINCTRL
+#define CDNS_I2C_PINCTRL_DEFINE(n) PINCTRL_DT_INST_DEFINE(n);
+#define CDNS_I2C_PINCTRL_INIT(n)   .pincfg = PINCTRL_DT_INST_DEV_CONFIG_GET(n),
+#else
+#define CDNS_I2C_PINCTRL_DEFINE(n)
+#define CDNS_I2C_PINCTRL_INIT(n)
+#endif /* CONFIG_PINCTRL */
+
 #define CDNS_I2C_HAS_FIXED_CLK(n) DT_NODE_HAS_PROP(DT_INST_CLOCKS_CTLR(n), clock_frequency)
 
 #define CDNS_I2C_CLOCK_INIT(n)                                                                     \
@@ -1493,6 +1524,7 @@ static DEVICE_API(i2c, cdns_i2c_driver_api) = {
 		    (DT_INST_PROP_BY_PHANDLE(n, clocks, clock_frequency)), (0))
 
 #define CADENCE_I2C_INIT(n, compat)                                                                \
+	CDNS_I2C_PINCTRL_DEFINE(n)                                                                 \
 	static void cdns_i2c_config_func_##compat##_##n(void);                                     \
                                                                                                    \
 	static const struct cdns_i2c_config cdns_i2c_config_##compat##_##n = {                     \

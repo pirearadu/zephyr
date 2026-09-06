@@ -62,6 +62,8 @@
 	status = "okay";
 	clocks = <&clkc XLNX_PS7_CLK_IOPLL>;
 	phy-handle = <&phy0>;
+	pinctrl-0 = <&pinctrl_ethernet0_default>, <&pinctrl_mdio0_default>;
+	pinctrl-names = "default";
 };
 
 &gem0_mdio {

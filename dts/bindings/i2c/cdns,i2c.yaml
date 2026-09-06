@@ -7,7 +7,7 @@ description: |
 
 compatible: "cdns,i2c"
 
-include: [i2c-controller.yaml, reset-device.yaml]
+include: [i2c-controller.yaml, reset-device.yaml, pinctrl-device.yaml]
 
 properties:
   reg:

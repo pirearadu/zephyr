@@ -23,6 +23,9 @@
 #include <zephyr/cache.h>
 
 #include <zephyr/drivers/clock_control.h>
+#ifdef CONFIG_PINCTRL
+#include <zephyr/drivers/pinctrl.h>
+#endif
 #include <zephyr/net/phy.h>
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/ethernet.h>
@@ -123,6 +126,20 @@ DT_INST_FOREACH_STATUS_OKAY(ETH_XLNX_GEM_BUFFER_SIZE_CHECK)
 static int eth_xlnx_gem_dev_init(const struct device *dev)
 {
 	const struct eth_xlnx_gem_dev_cfg *dev_conf __maybe_unused = DEV_CFG(dev);
+
+#ifdef CONFIG_PINCTRL
+	int pinctrl_err;
+
+	/*
+	 * A board that leaves the multiplexing of the GEM's pins to its boot
+	 * loader describes no pin state, which is not an error.
+	 */
+	pinctrl_err = pinctrl_apply_state(dev_conf->pincfg, PINCTRL_STATE_DEFAULT);
+	if (pinctrl_err < 0 && pinctrl_err != -ENOENT) {
+		LOG_ERR("%s: cannot apply the default pin state (err %d)", dev->name, pinctrl_err);
+		return pinctrl_err;
+	}
+#endif /* CONFIG_PINCTRL */
 
 	/* Precondition checks using assertions */
 

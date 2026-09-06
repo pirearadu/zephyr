@@ -29,4 +29,57 @@
 			bias-disable;
 		};
 	};
+
+	pinctrl_ethernet0_default: ethernet0-default {
+		mux {
+			groups = "ethernet0_0_grp";
+			function = "ethernet0";
+		};
+
+		conf {
+			groups = "ethernet0_0_grp";
+			slew-rate = <IO_SPEED_FAST>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+			bias-disable;
+		};
+
+		conf-rx {
+			pins = "MIO22", "MIO23", "MIO24", "MIO25", "MIO26", "MIO27";
+			bias-high-impedance;
+			low-power-disable;
+		};
+
+		conf-tx {
+			pins = "MIO16", "MIO17", "MIO18", "MIO19", "MIO20", "MIO21";
+			low-power-enable;
+		};
+	};
+
+	pinctrl_mdio0_default: mdio0-default {
+		mux {
+			groups = "mdio0_0_grp";
+			function = "mdio0";
+		};
+
+		conf {
+			groups = "mdio0_0_grp";
+			slew-rate = <IO_SPEED_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+			bias-disable;
+		};
+	};
+
+	pinctrl_i2c0_default: i2c0-default {
+		mux {
+			groups = "i2c0_10_grp";
+			function = "i2c0";
+		};
+
+		conf {
+			groups = "i2c0_10_grp";
+			slew-rate = <IO_SPEED_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+			bias-pull-up;
+		};
+	};
 };

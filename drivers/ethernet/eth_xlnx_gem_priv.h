@@ -408,6 +408,18 @@ ETH_NET_DEVICE_DT_INST_DEFINE(port,\
 	NET_ETH_MTU);
 
 /*
+ * Pin control is optional: a board that leaves the multiplexing of the GEM's
+ * pins to its boot loader describes no pin state at all.
+ */
+#ifdef CONFIG_PINCTRL
+#define ETH_XLNX_GEM_PINCTRL_DEFINE(port) PINCTRL_DT_INST_DEFINE(port);
+#define ETH_XLNX_GEM_PINCTRL_INIT(port) .pincfg = PINCTRL_DT_INST_DEV_CONFIG_GET(port),
+#else
+#define ETH_XLNX_GEM_PINCTRL_DEFINE(port)
+#define ETH_XLNX_GEM_PINCTRL_INIT(port)
+#endif /* CONFIG_PINCTRL */
+
+/*
  * The frequency the GEM divides down to its TX clock is either named by a clock
  * controller or given outright, as it has always been.
  */
@@ -425,6 +437,7 @@ static const struct eth_xlnx_gem_dev_cfg eth_xlnx_gem##port##_dev_cfg = {\
 	DEVICE_MMIO_NAMED_ROM_INIT_BY_NAME(clkc, DT_DRV_INST(port)),\
 	.phy_dev			= DEVICE_DT_GET(DT_INST_PHANDLE(port, phy_handle)),\
 	.config_func			= eth_xlnx_gem##port##_irq_config,\
+	ETH_XLNX_GEM_PINCTRL_INIT(port)\
 	ETH_XLNX_GEM_CLOCK_INIT(port)\
 	.defer_rxp_to_queue		= !DT_INST_PROP(port, handle_rx_in_isr),\
 	.defer_txd_to_queue		= DT_INST_PROP(port, handle_tx_in_workq),\
@@ -542,6 +555,7 @@ if (dev == DEVICE_DT_INST_GET(port)) {\
 
 /* Top-level device initialization macro - bundles all of the above */
 #define ETH_XLNX_GEM_INITIALIZE(port) \
+ETH_XLNX_GEM_PINCTRL_DEFINE(port)\
 ETH_XLNX_GEM_CONFIG_IRQ_FUNC(port);\
 ETH_XLNX_GEM_DEV_CONFIG(port);\
 ETH_XLNX_GEM_DEV_DATA(port);\
@@ -651,6 +665,9 @@ struct eth_xlnx_gem_dev_cfg {
 	const struct device		*phy_dev;
 	eth_xlnx_gem_config_irq_t	config_func;
 
+#ifdef CONFIG_PINCTRL
+	const struct pinctrl_dev_config	*pincfg;
+#endif
 	const struct device		*clock_dev;
 	clock_control_subsys_t		clock_subsys;
 	uint32_t			pll_clock_frequency;

@@ -326,8 +326,12 @@ static int uart_xlnx_ps_init(const struct device *dev)
 	uintptr_t reg_base = DEVICE_MMIO_GET(dev);
 
 #ifdef CONFIG_PINCTRL
+	/*
+	 * A board that leaves the multiplexing of the UART's pins to its boot
+	 * loader describes no pin state, which is not an error.
+	 */
 	err = pinctrl_apply_state(dev_cfg->pincfg, PINCTRL_STATE_DEFAULT);
-	if (err < 0) {
+	if (err < 0 && err != -ENOENT) {
 		return err;
 	}
 #endif
