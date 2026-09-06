@@ -14,7 +14,7 @@ Hardware
 
 - Xilinx Zynq-7000 XC7Z020-1CLG400C AP SoC (dual-core ARM Cortex-A9 @ 650 MHz)
 - 512 MiB DDR3 with a 16-bit bus
-- 16 MiB Quad-SPI flash
+- 16 MiB Quad-SPI flash on QSPI (``MIO1``..``MIO6``, feedback clock on ``MIO8``)
 - microSD slot
 - USB-UART bridge on UART0 (``MIO14``/``MIO15``)
 - Gigabit Ethernet (GEM0, RGMII on ``MIO16``..``MIO27``, MDIO on ``MIO52``/``MIO53``,
@@ -31,6 +31,11 @@ Supported Features
 ==================
 
 .. zephyr:board-supported-hw::
+
+The QSPI controller is enabled, but no flash node is defined for it: the fitted 16 MiB device
+differs between board revisions. Add a node for the device actually fitted as a child of
+``&qspi`` in an application overlay. The driver operates the controller in single line I/O
+mode, so the quad read and write commands of the flash are not used.
 
 GEM0 is enabled by default. The GEM driver has no pinctrl support, so the RGMII and MDIO
 multiplexing is left to the PS initialization performed by the boot loader. GEM1 exists in

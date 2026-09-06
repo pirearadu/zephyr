@@ -13,4 +13,5 @@ supported:
   - gpio
   - netif:eth
   - serial
+  - spi
 vendor: digilent

@@ -14,4 +14,5 @@ supported:
   - i2c
   - netif:eth
   - serial
+  - spi
 vendor: tul

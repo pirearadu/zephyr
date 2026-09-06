@@ -93,6 +93,17 @@
 	};
 };
 
+/*
+ * The QSPI flash the board boots from, on MIO1..MIO6 with the feedback clock on
+ * MIO8. The fitted 16 MiB device differs between board revisions, so no flash
+ * node is defined here; add one for the device actually fitted, as a child of
+ * this node in an application overlay.
+ */
+&qspi {
+	status = "okay";
+	clock-frequency = <200000000>;
+};
+
 &psgpio {
 	status = "okay";
 };
