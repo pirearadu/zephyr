@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Xilinx Zynq-7000 PS clock subsystem.
+
+  The controller derives every clock of the processing system from the PS
+  reference clock through the three PLLs and the divider of each peripheral,
+  all of which live in the system level control registers. Consumers name a
+  clock by one of the identifiers in
+  <zephyr/dt-bindings/clock/xlnx-ps7-clkc.h>.
+
+compatible: "xlnx,ps7-clkc"
+
+include: [clock-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  syscon:
+    type: phandle
+    required: true
+    description: The system level control registers holding the clock registers.
+
+  ps-clk-frequency:
+    type: int
+    required: true
+    description: |
+      Frequency in Hz of the PS reference clock the board feeds the PS_CLK
+      pin, from which every PLL output is derived.
+
+  "#clock-cells":
+    const: 1
+
+clock-cells:
+  - id

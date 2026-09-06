@@ -110,6 +110,12 @@
 	clock-frequency = <108333336>;
 };
 
+/* PS_CLK, from which the three PLLs derive every clock of the processing system */
+&clkc {
+	status = "okay";
+	ps-clk-frequency = <50000000>;
+};
+
 &psgpio {
 	status = "okay";
 };

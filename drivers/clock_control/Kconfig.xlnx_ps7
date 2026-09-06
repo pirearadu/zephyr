@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+config CLOCK_CONTROL_XLNX_PS7
+	bool "Xilinx Zynq-7000 PS clock controller driver"
+	default y
+	depends on DT_HAS_XLNX_PS7_CLKC_ENABLED
+	depends on SYSCON
+	help
+	  Enable the clock controller driver for the PS clock subsystem of the
+	  Xilinx Zynq-7000, which derives every clock of the processing system
+	  from the PS reference clock.
+
+if CLOCK_CONTROL_XLNX_PS7
+
+config CLOCK_CONTROL_XLNX_PS7_INIT_PRIORITY
+	int "Xilinx Zynq-7000 PS clock controller init priority"
+	default 55
+	help
+	  Initialization priority of the clock controller. It reaches the clock
+	  registers through the system level control registers, so it has to be
+	  initialized after them, which means a value above SYSCON_INIT_PRIORITY.
+
+endif # CLOCK_CONTROL_XLNX_PS7
