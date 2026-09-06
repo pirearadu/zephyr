@@ -120,6 +120,7 @@ static const struct clock_desc clock_descs[XLNX_PS7_CLK_NUM] = {
 
 /* Bit of APER_CLK_CTRL gating each AMBA peripheral clock */
 static const uint8_t aper_bits[XLNX_PS7_CLK_NUM] = {
+	[XLNX_PS7_CLK_DMA] = 0,
 	[XLNX_PS7_CLK_USB0_APER] = 2,   [XLNX_PS7_CLK_USB1_APER] = 3,
 	[XLNX_PS7_CLK_GEM0_APER] = 6,   [XLNX_PS7_CLK_GEM1_APER] = 7,
 	[XLNX_PS7_CLK_SDIO0_APER] = 10, [XLNX_PS7_CLK_SDIO1_APER] = 11,
@@ -131,9 +132,15 @@ static const uint8_t aper_bits[XLNX_PS7_CLK_NUM] = {
 	[XLNX_PS7_CLK_SMC_APER] = 24,
 };
 
+/*
+ * The clock the DMA controller drives its AXI master with is gated in the same
+ * register as the AMBA peripheral clocks, but runs at CPU_2X rather than at
+ * CPU_1X, so it shares the gating path and not the rate one.
+ */
 static bool clock_is_aper(uint32_t id)
 {
-	return id >= XLNX_PS7_CLK_USB0_APER && id <= XLNX_PS7_CLK_SMC_APER;
+	return id == XLNX_PS7_CLK_DMA ||
+	       (id >= XLNX_PS7_CLK_USB0_APER && id <= XLNX_PS7_CLK_SMC_APER);
 }
 
 static int ps7_read(const struct device *dev, uint16_t offset, uint32_t *val)
@@ -305,6 +312,8 @@ static int clock_control_xlnx_ps7_get_rate(const struct device *dev, clock_contr
 	case XLNX_PS7_CLK_CPU_2X:
 	case XLNX_PS7_CLK_CPU_1X:
 		return ps7_cpu_rate(dev, id, rate);
+	case XLNX_PS7_CLK_DMA:
+		return ps7_cpu_rate(dev, XLNX_PS7_CLK_CPU_2X, rate);
 	default:
 		break;
 	}
