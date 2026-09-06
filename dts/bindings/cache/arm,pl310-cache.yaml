@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  ARM CoreLink Level 2 Cache Controller (L2C-310, formerly PL310).
+
+  The controller backs the level one caches of the Cortex-A processor it sits
+  below, so the driver performs the maintenance of both levels in the order
+  each operation needs. It addresses its lines physically and is therefore only
+  usable where the mapping it is reached through is flat.
+
+compatible: "arm,pl310-cache"
+
+include: base.yaml
+
+properties:
+  reg:
+    required: true

@@ -1,0 +1,15 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+config CACHE_PL310
+	bool "ARM L2C-310 level two cache controller driver"
+	default y
+	depends on DT_HAS_ARM_PL310_CACHE_ENABLED
+	depends on EXTERNAL_CACHE
+	depends on CPU_AARCH32_CORTEX_A
+	select CACHE_HAS_DRIVER
+	help
+	  Enable the driver for the ARM CoreLink Level 2 Cache Controller
+	  (L2C-310, formerly PL310). The driver performs the maintenance of the
+	  level one caches of the processor as well, since the level two cache
+	  is only reachable through them.

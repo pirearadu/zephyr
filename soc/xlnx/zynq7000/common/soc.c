@@ -22,6 +22,16 @@
 			      DT_REG_SIZE(id),\
 			      MT_DEVICE | MATTR_SHARED | MPERM_R | MPERM_W),
 
+/*
+ * The level two cache controller sits just past the MPCore mapping, so it needs
+ * one of its own for its driver to reach it.
+ */
+#define L2CC_MMU_ENTRY(id)\
+	MMU_REGION_FLAT_ENTRY("l2cc",\
+			      DT_REG_ADDR(id),\
+			      DT_REG_SIZE(id),\
+			      MT_STRONGLY_ORDERED | MPERM_R | MPERM_W),
+
 static const struct arm_mmu_region mmu_regions[] = {
 
 	MMU_REGION_FLAT_ENTRY("vectors",
@@ -39,6 +49,7 @@ static const struct arm_mmu_region mmu_regions[] = {
 	/* ARM Arch timer, GIC are covered by the MPCore mapping */
 
 DT_FOREACH_STATUS_OKAY(xlnx_xps_gpio_1_00_a, AXI_GPIO_MMU_ENTRY)
+DT_FOREACH_STATUS_OKAY(arm_pl310_cache, L2CC_MMU_ENTRY)
 
 };
 
