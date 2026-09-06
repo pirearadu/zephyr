@@ -32,6 +32,21 @@
 			      DT_REG_SIZE(id),\
 			      MT_STRONGLY_ORDERED | MPERM_R | MPERM_W),
 
+/*
+ * The DMA engine reaches its registers and fetches the program of a channel
+ * from the buffer the microcode property points at, neither of which may be
+ * cached.
+ */
+#define DMAC_MMU_ENTRY(id)\
+	MMU_REGION_FLAT_ENTRY("dmac",\
+			      DT_REG_ADDR(id),\
+			      DT_REG_SIZE(id),\
+			      MT_STRONGLY_ORDERED | MPERM_R | MPERM_W),\
+	MMU_REGION_FLAT_ENTRY("dmacucode",\
+			      DT_PROP_BY_IDX(id, microcode, 0),\
+			      DT_PROP_BY_IDX(id, microcode, 1),\
+			      MT_STRONGLY_ORDERED | MPERM_R | MPERM_W),
+
 static const struct arm_mmu_region mmu_regions[] = {
 
 	MMU_REGION_FLAT_ENTRY("vectors",
@@ -50,6 +65,7 @@ static const struct arm_mmu_region mmu_regions[] = {
 
 DT_FOREACH_STATUS_OKAY(xlnx_xps_gpio_1_00_a, AXI_GPIO_MMU_ENTRY)
 DT_FOREACH_STATUS_OKAY(arm_pl310_cache, L2CC_MMU_ENTRY)
+DT_FOREACH_STATUS_OKAY(arm_dma_pl330, DMAC_MMU_ENTRY)
 
 };
 

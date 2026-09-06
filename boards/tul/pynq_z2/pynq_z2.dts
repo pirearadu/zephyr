@@ -119,3 +119,18 @@
 &psgpio {
 	status = "okay";
 };
+
+/*
+ * The DMA engine fetches the program of a channel over its AXI master, so the
+ * microcode buffer is carved out of the top of the on-chip memory, past the
+ * region the linker fills, where the SoC maps it uncached. Eight channels of
+ * 1 KiB each.
+ */
+&ocm_high {
+	reg = <0xfffc0000 DT_SIZE_K(248)>;
+};
+
+&dmac {
+	status = "okay";
+	microcode = <0xffffe000 DT_SIZE_K(8)>;
+};

@@ -553,6 +553,33 @@ static int dma_pl330_initialize(const struct device *dev)
 	const struct dma_pl330_config *const dev_cfg = dev->config;
 	struct dma_pl330_dev_data *const dev_data = dev->data;
 	struct dma_pl330_ch_config *channel_cfg;
+	int ret;
+
+	if (dev_cfg->clock_dev != NULL) {
+		if (!device_is_ready(dev_cfg->clock_dev)) {
+			LOG_ERR("Clock controller is not ready");
+			return -ENODEV;
+		}
+
+		ret = clock_control_on(dev_cfg->clock_dev, dev_cfg->clock_subsys);
+		if (ret != 0) {
+			LOG_ERR("Cannot enable the clock: %d", ret);
+			return ret;
+		}
+	}
+
+	if (dev_cfg->reset.dev != NULL) {
+		if (!device_is_ready(dev_cfg->reset.dev)) {
+			LOG_ERR("Reset controller is not ready");
+			return -ENODEV;
+		}
+
+		ret = reset_line_deassert_dt(&dev_cfg->reset);
+		if (ret != 0) {
+			LOG_ERR("Cannot release the reset: %d", ret);
+			return ret;
+		}
+	}
 
 	for (int channel = 0; channel < MAX_DMA_CHANNELS; channel++) {
 		channel_cfg = &dev_data->channels[channel];
@@ -571,12 +598,28 @@ static DEVICE_API(dma, pl330_driver_api) = {
 	.stop = dma_pl330_transfer_stop,
 };
 
+/*
+ * A clock controller and a reset controller are optional, so that a platform
+ * whose boot loader leaves the controller running keeps working unchanged.
+ */
+#define PL330_CLOCK_INIT(n)                                                                        \
+	COND_CODE_1(DT_INST_NODE_HAS_PROP(n, clocks),                                              \
+		    (.clock_dev = DEVICE_DT_GET(DT_INST_CLOCKS_CTLR(n)),                           \
+		     .clock_subsys =                                                               \
+			     (clock_control_subsys_t)(uintptr_t)DT_INST_CLOCKS_CELL(n, id),),      \
+		    ())
+
+#define PL330_RESET_INIT(n)                                                                        \
+	COND_CODE_1(DT_INST_NODE_HAS_PROP(n, resets), (.reset = RESET_DT_SPEC_INST_GET(n),), ())
+
 static const struct dma_pl330_config pl330_config = {
 	.reg_base = DT_INST_REG_ADDR(0),
 #ifdef CONFIG_DMA_64BIT
 	.control_reg_base = DT_INST_REG_ADDR_BY_NAME(0, control_regs),
 #endif
 	.mcode_base = DT_INST_PROP_BY_IDX(0, microcode, 0),
+	PL330_CLOCK_INIT(0)
+	PL330_RESET_INIT(0)
 };
 
 static struct dma_pl330_dev_data pl330_data;

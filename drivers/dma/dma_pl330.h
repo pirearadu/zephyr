@@ -7,7 +7,9 @@
 #ifndef DMA_PL330_H
 #define DMA_PL330_H
 
+#include <zephyr/drivers/clock_control.h>
 #include <zephyr/drivers/dma.h>
+#include <zephyr/drivers/reset.h>
 
 #define DT_DRV_COMPAT arm_dma_pl330
 /*
@@ -164,6 +166,9 @@ struct dma_pl330_config {
 #ifdef CONFIG_DMA_64BIT
 	mem_addr_t control_reg_base;
 #endif
+	const struct device *clock_dev;
+	clock_control_subsys_t clock_subsys;
+	struct reset_dt_spec reset;
 };
 
 struct dma_pl330_dev_data {
