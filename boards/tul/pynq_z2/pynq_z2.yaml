@@ -15,4 +15,5 @@ supported:
   - netif:eth
   - serial
   - spi
+  - watchdog
 vendor: tul

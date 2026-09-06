@@ -85,6 +85,12 @@
 	clock-frequency = <200000000>;
 };
 
+/* Clocked by CPU_1x, as the SLCR selects that source out of reset */
+&swdt {
+	status = "okay";
+	clock-frequency = <108333336>;
+};
+
 &psgpio {
 	status = "okay";
 };

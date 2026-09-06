@@ -28,6 +28,9 @@ Supported Features
 
 .. zephyr:board-supported-hw::
 
+The system watchdog is enabled and clocked by CPU_1x. It resets the whole processing
+system on expiry, and its counter halts on its own while a debugger holds the CPU.
+
 The QSPI controller is enabled, but no flash node is defined for it: the fitted 16 MiB device
 differs between board revisions. Add a node for the device actually fitted as a child of
 ``&qspi`` in an application overlay. The driver operates the controller in single line I/O
