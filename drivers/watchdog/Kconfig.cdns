@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+config WDT_CDNS
+	bool "Cadence WDT r1p2 watchdog driver"
+	default y
+	depends on DT_HAS_CDNS_WDT_R1P2_ENABLED
+	select HAS_WDT_DISABLE_AT_BOOT
+	help
+	  Enable the Cadence WDT r1p2 watchdog driver, which drives the system
+	  watchdog timer (SWDT) of the Xilinx Zynq-7000.

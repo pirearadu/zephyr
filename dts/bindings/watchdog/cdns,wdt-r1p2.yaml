@@ -1,0 +1,34 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Cadence WDT r1p2 watchdog timer, the system watchdog timer (SWDT) of the
+  Xilinx Zynq-7000.
+
+  The watchdog has a single timeout, counted down by a 24 bit counter whose
+  reload value has its low 12 bits fixed to ones, fed through a prescaler
+  dividing the input clock by 8, 64, 512 or 4096. A requested timeout is
+  therefore rounded up to what the pair can express.
+
+compatible: "cdns,wdt-r1p2"
+
+include: [base.yaml, reset-device.yaml]
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    required: true
+    description: |
+      The watchdog's interrupt line, raised on expiry while the interrupt
+      output is enabled, which the driver only does for a timeout that
+      installs a callback.
+
+  clock-frequency:
+    type: int
+    required: true
+    description: |
+      Frequency in Hz of the clock feeding the watchdog's prescaler. This is
+      the CPU_1x clock unless the SLCR selects an external or PL clock, which
+      this driver does not do.
