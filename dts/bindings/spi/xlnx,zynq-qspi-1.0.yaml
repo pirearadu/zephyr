@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Xilinx Zynq-7000 Quad SPI (QSPI) controller.
+
+  The driver operates the controller in I/O mode with the flash memory
+  interface turned off, that is, as an ordinary single line SPI controller.
+  Only SPI modes 0 and 3 are reachable, as the controller ties the clock phase
+  to the clock polarity. The linear address (LQSPI) mode a boot loader may have
+  left the controller in is turned off during initialization. The dual parallel
+  and dual stacked memory configurations are not supported, so at most two chip
+  selects, driven one at a time, are available.
+
+compatible: "xlnx,zynq-qspi-1.0"
+
+include: [spi-controller.yaml]
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    description: |
+      The controller's interrupt line. The driver drives the controller by
+      polling and leaves the interrupt masked, so the property is only there to
+      describe the hardware.
+
+  clock-frequency:
+    required: true
+    description: |
+      Frequency in Hz of the QSPI reference clock (QSPI_CLK) feeding the
+      controller. The SCLK frequency requested by a device on the bus is
+      derived from it by a power-of-two divider between 2 and 256, rounded
+      down to the closest frequency that does not exceed the request.

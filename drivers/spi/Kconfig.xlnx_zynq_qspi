@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+config SPI_XLNX_ZYNQ_QSPI
+	bool "Xilinx Zynq-7000 QSPI driver"
+	default y
+	depends on DT_HAS_XLNX_ZYNQ_QSPI_1_0_ENABLED
+	help
+	  Enable the Xilinx Zynq-7000 Quad SPI (QSPI) controller driver. The
+	  controller is operated as an ordinary single line SPI controller,
+	  which is normally used with the QSPI flash device a Zynq-7000 board
+	  boots from, but can also be used with other SPI devices. The quad and
+	  dual width commands of a flash device are not available this way.
