@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <zephyr/drivers/clock_control.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/dt-bindings/i2c/i2c.h>
 #include <zephyr/sys/util.h>
@@ -150,6 +151,8 @@ enum cdns_i2c_target_state {
 struct cdns_i2c_config {
 	DEVICE_MMIO_ROM;
 	void (*irq_config_func)(void);
+	const struct device *clock_dev;
+	clock_control_subsys_t clock_subsys;
 };
 
 /**
@@ -1425,6 +1428,20 @@ static int32_t cdns_i2c_init(const struct device *dev)
 	i2c_bus->ctrl_reg = CDNS_I2C_CR_CONTROLLER_EN_MASK;
 	i2c_bus->transfer_size = CDNS_I2C_TRANSFER_SIZE_DEFAULT;
 
+	/*
+	 * A clock controller, where the platform names one, knows the frequency
+	 * the clock registers produce; otherwise the input clock came straight
+	 * from the devicetree.
+	 */
+	if (config->clock_dev != NULL) {
+		ret = clock_control_get_rate(config->clock_dev, config->clock_subsys,
+					     &i2c_bus->input_clk);
+		if (ret != 0) {
+			LOG_ERR("Cannot read the input clock: %d", ret);
+			goto out;
+		}
+	}
+
 	/* Set the I2C clock frequency */
 	ret = cdns_i2c_setclk(dev, i2c_bus->i2c_clk);
 	if (ret != 0) {
@@ -1459,16 +1476,31 @@ static DEVICE_API(i2c, cdns_i2c_driver_api) = {
 #endif
 };
 
+/*
+ * The input clock is either named by a clock controller or, as the binding has
+ * always allowed, given by a node carrying its frequency outright.
+ */
+#define CDNS_I2C_HAS_FIXED_CLK(n) DT_NODE_HAS_PROP(DT_INST_CLOCKS_CTLR(n), clock_frequency)
+
+#define CDNS_I2C_CLOCK_INIT(n)                                                                     \
+	COND_CODE_1(CDNS_I2C_HAS_FIXED_CLK(n), (),                                                 \
+		    (.clock_dev = DEVICE_DT_GET(DT_INST_CLOCKS_CTLR(n)),                           \
+		     .clock_subsys =                                                               \
+			     (clock_control_subsys_t)(uintptr_t)DT_INST_CLOCKS_CELL(n, id),))
+
+#define CDNS_I2C_INPUT_CLK(n)                                                                      \
+	COND_CODE_1(CDNS_I2C_HAS_FIXED_CLK(n),                                                     \
+		    (DT_INST_PROP_BY_PHANDLE(n, clocks, clock_frequency)), (0))
+
 #define CADENCE_I2C_INIT(n, compat)                                                                \
 	static void cdns_i2c_config_func_##compat##_##n(void);                                     \
                                                                                                    \
 	static const struct cdns_i2c_config cdns_i2c_config_##compat##_##n = {                     \
 		DEVICE_MMIO_ROM_INIT(DT_DRV_INST(n)),                                              \
-		.irq_config_func = cdns_i2c_config_func_##compat##_##n,                            \
-	};                                                                                         \
+		.irq_config_func = cdns_i2c_config_func_##compat##_##n, CDNS_I2C_CLOCK_INIT(n)};   \
                                                                                                    \
 	static struct cdns_i2c_data cdns_i2c_data_##compat##_##n = {                               \
-		.input_clk = DT_INST_PROP_BY_PHANDLE(n, clocks, clock_frequency),                  \
+		.input_clk = CDNS_I2C_INPUT_CLK(n),                                                \
 		.i2c_clk = DT_INST_PROP(n, clock_frequency),                                       \
 		.fifo_depth = DT_INST_PROP(n, fifo_depth),                                         \
 	};                                                                                         \

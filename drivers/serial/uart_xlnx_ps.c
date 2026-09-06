@@ -29,6 +29,7 @@
 #include <zephyr/init.h>
 #include <zephyr/toolchain.h>
 #include <zephyr/linker/sections.h>
+#include <zephyr/drivers/clock_control.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/sys/sys_io.h>
 #include <zephyr/irq.h>
@@ -138,6 +139,8 @@
 /** Device configuration structure */
 struct uart_xlnx_ps_dev_config {
 	DEVICE_MMIO_ROM;
+	const struct device *clock_dev;
+	clock_control_subsys_t clock_subsys;
 	uint32_t sys_clk_freq;
 #ifdef CONFIG_UART_INTERRUPT_DRIVEN
 	uart_irq_config_func_t irq_config_func;
@@ -233,6 +236,18 @@ static void set_baudrate(const struct device *dev, uint32_t baud_rate)
 	uint32_t clk_freq = dev_cfg->sys_clk_freq;
 	uintptr_t reg_base = DEVICE_MMIO_GET(dev);
 	uint32_t divisor, generator;
+
+	/*
+	 * A clock controller, where the platform has one, knows the frequency
+	 * the clock registers actually produce. Leaving the frequency at zero
+	 * when it cannot be read keeps the baud rate untouched below.
+	 */
+	if (dev_cfg->clock_dev != NULL) {
+		if (clock_control_get_rate(dev_cfg->clock_dev, dev_cfg->clock_subsys, &clk_freq) !=
+		    0) {
+			clk_freq = 0U;
+		}
+	}
 
 	/* Calculate divisor and baud rate generator value */
 	if ((baud != 0) && (clk_freq != 0)) {
@@ -1198,11 +1213,21 @@ static DEVICE_API(uart, uart_xlnx_ps_driver_api) = {
 #define UART_XLNX_PS_PINCTRL_INIT(port)
 #endif /* CONFIG_PINCTRL */
 
+/*
+ * The reference clock is either named by a clock controller or, on a platform
+ * without one, given outright as a frequency.
+ */
+#define UART_XLNX_PS_CLOCK_INIT(port)                                                              \
+	COND_CODE_1(DT_INST_NODE_HAS_PROP(port, clocks),                                           \
+		    (.clock_dev = DEVICE_DT_GET(DT_INST_CLOCKS_CTLR(port)),                        \
+		     .clock_subsys =                                                               \
+			     (clock_control_subsys_t)(uintptr_t)DT_INST_CLOCKS_CELL(port, id),),   \
+		    (.sys_clk_freq = DT_INST_PROP(port, clock_frequency),))
+
 #define UART_XLNX_PS_DEV_CFG(port)                                                                 \
 	static struct uart_xlnx_ps_dev_config uart_xlnx_ps_dev_cfg_##port = {                      \
 		DEVICE_MMIO_ROM_INIT(DT_DRV_INST(port)),                                           \
-		.sys_clk_freq = DT_INST_PROP(port, clock_frequency),                               \
-		.baud_rate = DT_INST_PROP(port, current_speed),                                    \
+		UART_XLNX_PS_CLOCK_INIT(port).baud_rate = DT_INST_PROP(port, current_speed),       \
 		UART_XLNX_PS_IRQ_CONF_FUNC_SET(port) UART_XLNX_PS_PINCTRL_INIT(port)}
 
 #define UART_XLNX_PS_INIT(port)                                                                    \

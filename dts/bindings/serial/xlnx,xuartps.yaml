@@ -7,3 +7,8 @@ include: [uart-controller.yaml, pinctrl-device.yaml]
 properties:
   reg:
     required: true
+
+  clocks:
+    description: |
+      The UART reference clock. A platform without a clock controller gives
+      its frequency as clock-frequency instead.

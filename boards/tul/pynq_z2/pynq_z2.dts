@@ -43,19 +43,12 @@
 		compatible = "mmio-sram";
 		reg = <0x00000000 DT_SIZE_M(512)>;
 	};
-
-	/* CPU_1x, derived from the ARM PLL with the PS configuration of the PYNQ-Z2 */
-	cpu_1x_clk: cpu-1x-clock {
-		compatible = "fixed-clock";
-		clock-frequency = <108333336>;
-		#clock-cells = <0>;
-	};
 };
 
 &uart0 {
 	status = "okay";
 	current-speed = <115200>;
-	clock-frequency = <100000000>;
+	clocks = <&clkc XLNX_PS7_CLK_UART0>;
 	pinctrl-0 = <&pinctrl_uart0_default>;
 	pinctrl-names = "default";
 };
@@ -67,7 +60,7 @@
  */
 &i2c0 {
 	status = "okay";
-	clocks = <&cpu_1x_clk>;
+	clocks = <&clkc XLNX_PS7_CLK_CPU_1X>;
 	clock-frequency = <I2C_BITRATE_STANDARD>;
 };
 
@@ -75,12 +68,11 @@
  * The board's only Ethernet interface. The GEM driver has no pinctrl support,
  * so the RGMII multiplexing on MIO16..MIO27 and the MDIO multiplexing on
  * MIO52/MIO53 are left to the PS initialization performed by the boot loader.
- * clock-frequency is the IO PLL frequency, from which the GEM derives its TX
- * clock.
+ * The GEM divides the IO PLL down to the TX clock the link speed needs.
  */
 &gem0 {
 	status = "okay";
-	clock-frequency = <1000000000>;
+	clocks = <&clkc XLNX_PS7_CLK_IOPLL>;
 	phy-handle = <&phy0>;
 };
 

@@ -13,6 +13,15 @@ config CLOCK_CONTROL
 config SYSCON
 	default y
 
+# The system level control registers and the clock subsystem sitting inside
+# them are what every other driver on this SoC asks for its input clock, so
+# both come up before any of them.
+config SYSCON_INIT_PRIORITY
+	default 5
+
+config CLOCK_CONTROL_XLNX_PS7_INIT_PRIORITY
+	default 10
+
 config NUM_IRQS
 	# must be >= the highest interrupt number used
 	default 96

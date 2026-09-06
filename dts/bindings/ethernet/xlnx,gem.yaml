@@ -19,9 +19,14 @@ properties:
   phy-handle:
     required: true
 
+  clocks:
+    description: |
+      The PLL supplying the GEM's TX clock, which the driver divides down to
+      the frequency the current link speed needs. A platform without a clock
+      controller gives the frequency as clock-frequency instead.
+
   clock-frequency:
     type: int
-    required: true
     description: |
       Specifies the base clock frequency from which the GEM's TX clock
       frequency will be derived using two dividers in the respective GEM's

@@ -407,6 +407,17 @@ ETH_NET_DEVICE_DT_INST_DEFINE(port,\
 	&eth_xlnx_gem_apis,\
 	NET_ETH_MTU);
 
+/*
+ * The frequency the GEM divides down to its TX clock is either named by a clock
+ * controller or given outright, as it has always been.
+ */
+#define ETH_XLNX_GEM_CLOCK_INIT(port)\
+	COND_CODE_1(DT_INST_NODE_HAS_PROP(port, clocks),\
+		(.clock_dev = DEVICE_DT_GET(DT_INST_CLOCKS_CTLR(port)),\
+		 .clock_subsys =\
+			(clock_control_subsys_t)(uintptr_t)DT_INST_CLOCKS_CELL(port, id),),\
+		(.pll_clock_frequency = DT_INST_PROP(port, clock_frequency),))
+
 /* Device configuration data declaration macro */
 #define ETH_XLNX_GEM_DEV_CONFIG(port) \
 static const struct eth_xlnx_gem_dev_cfg eth_xlnx_gem##port##_dev_cfg = {\
@@ -414,7 +425,7 @@ static const struct eth_xlnx_gem_dev_cfg eth_xlnx_gem##port##_dev_cfg = {\
 	DEVICE_MMIO_NAMED_ROM_INIT_BY_NAME(clkc, DT_DRV_INST(port)),\
 	.phy_dev			= DEVICE_DT_GET(DT_INST_PHANDLE(port, phy_handle)),\
 	.config_func			= eth_xlnx_gem##port##_irq_config,\
-	.pll_clock_frequency		= DT_INST_PROP(port, clock_frequency),\
+	ETH_XLNX_GEM_CLOCK_INIT(port)\
 	.defer_rxp_to_queue		= !DT_INST_PROP(port, handle_rx_in_isr),\
 	.defer_txd_to_queue		= DT_INST_PROP(port, handle_tx_in_workq),\
 	.ahb_burst_length		= (enum eth_xlnx_ahb_burst_length)\
@@ -640,6 +651,8 @@ struct eth_xlnx_gem_dev_cfg {
 	const struct device		*phy_dev;
 	eth_xlnx_gem_config_irq_t	config_func;
 
+	const struct device		*clock_dev;
+	clock_control_subsys_t		clock_subsys;
 	uint32_t			pll_clock_frequency;
 
 	uint8_t				defer_rxp_to_queue;
