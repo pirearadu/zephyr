@@ -1496,10 +1496,6 @@ static DEVICE_API(i2c, cdns_i2c_driver_api) = {
 };
 
 /*
- * The input clock is either named by a clock controller or, as the binding has
- * always allowed, given by a node carrying its frequency outright.
- */
-/*
  * Pin control is optional, so that a board leaving the multiplexing to its boot
  * loader keeps working unchanged.
  */
@@ -1511,6 +1507,10 @@ static DEVICE_API(i2c, cdns_i2c_driver_api) = {
 #define CDNS_I2C_PINCTRL_INIT(n)
 #endif /* CONFIG_PINCTRL */
 
+/*
+ * The input clock is either named by a clock controller or, as the binding has
+ * always allowed, given by a node carrying its frequency outright.
+ */
 #define CDNS_I2C_HAS_FIXED_CLK(n) DT_NODE_HAS_PROP(DT_INST_CLOCKS_CTLR(n), clock_frequency)
 
 #define CDNS_I2C_CLOCK_INIT(n)                                                                     \

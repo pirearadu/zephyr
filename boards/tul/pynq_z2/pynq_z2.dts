@@ -67,10 +67,9 @@
 };
 
 /*
- * The board's only Ethernet interface. The GEM driver has no pinctrl support,
- * so the RGMII multiplexing on MIO16..MIO27 and the MDIO multiplexing on
- * MIO52/MIO53 are left to the PS initialization performed by the boot loader.
- * The GEM divides the IO PLL down to the TX clock the link speed needs.
+ * The board's only Ethernet interface, on the RGMII pins MIO16..MIO27 with the
+ * MDIO bus on MIO52/MIO53. The GEM divides the IO PLL down to the TX clock the
+ * link speed needs.
  */
 &gem0 {
 	status = "okay";
