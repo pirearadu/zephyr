@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Xilinx Zynq-7000 reset controller.
+
+  The reset control registers of the processing system live in the system
+  level control registers, one register per group of peripherals. A consumer
+  names a reset by one of the identifiers in
+  <zephyr/dt-bindings/reset/xlnx-zynq-reset.h>, which encode the register and
+  the bit within it.
+
+compatible: "xlnx,zynq-reset"
+
+include: [reset-controller.yaml, base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  syscon:
+    type: phandle
+    required: true
+    description: The system level control registers holding the reset registers.
+
+  "#reset-cells":
+    const: 1
+
+reset-cells:
+  - id

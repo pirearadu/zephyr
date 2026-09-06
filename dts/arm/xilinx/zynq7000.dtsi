@@ -282,6 +282,14 @@
 			#clock-cells = <1>;
 		};
 
+		rstc: reset-controller@200 {
+			compatible = "xlnx,zynq-reset";
+			status = "disabled";
+			reg = <0x200 0x48>;
+			syscon = <&slcr>;
+			#reset-cells = <1>;
+		};
+
 		pinctrl0: pinctrl@700 {
 			compatible = "xlnx,pinctrl-zynq";
 			reg = <0x700 0x200>;

@@ -13,6 +13,9 @@ config CLOCK_CONTROL
 config SYSCON
 	default y
 
+config RESET
+	default y
+
 # The system level control registers and the clock subsystem sitting inside
 # them are what every other driver on this SoC asks for its input clock, so
 # both come up before any of them.

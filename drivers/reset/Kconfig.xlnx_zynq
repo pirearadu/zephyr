@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Radu Pirea
+# SPDX-License-Identifier: Apache-2.0
+
+config RESET_XLNX_ZYNQ
+	bool "Xilinx Zynq-7000 reset controller driver"
+	default y
+	depends on DT_HAS_XLNX_ZYNQ_RESET_ENABLED
+	depends on SYSCON
+	help
+	  Enable the reset controller driver for the Xilinx Zynq-7000, which
+	  drives the reset control registers of the processing system.
+
+if RESET_XLNX_ZYNQ
+
+config RESET_XLNX_ZYNQ_INIT_PRIORITY
+	int "Xilinx Zynq-7000 reset controller init priority"
+	default 15
+	help
+	  Initialization priority of the reset controller. It reaches the reset
+	  registers through the system level control registers, so it has to be
+	  initialized after them, which means a value above SYSCON_INIT_PRIORITY.
+
+endif # RESET_XLNX_ZYNQ

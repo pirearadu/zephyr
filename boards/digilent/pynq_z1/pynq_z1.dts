@@ -98,6 +98,10 @@
 	ps-clk-frequency = <50000000>;
 };
 
+&rstc {
+	status = "okay";
+};
+
 &psgpio {
 	status = "okay";
 };
