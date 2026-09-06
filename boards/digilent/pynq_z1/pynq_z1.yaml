@@ -11,5 +11,6 @@ toolchain:
 ram: 524288
 supported:
   - gpio
+  - netif:eth
   - serial
 vendor: digilent

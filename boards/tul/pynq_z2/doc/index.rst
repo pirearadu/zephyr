@@ -17,7 +17,8 @@ Hardware
 - 16 MiB Quad-SPI flash
 - microSD slot
 - USB-UART bridge on UART0 (``MIO14``/``MIO15``)
-- Gigabit Ethernet (GEM0, RGMII on ``MIO16``..``MIO27``, MDIO on ``MIO52``/``MIO53``)
+- Gigabit Ethernet (GEM0, RGMII on ``MIO16``..``MIO27``, MDIO on ``MIO52``/``MIO53``,
+  Realtek RTL8211E PHY at MDIO address 1)
 - USB 2.0 OTG (USB0, ``MIO28``..``MIO39``)
 - I2C0 on ``MIO50``/``MIO51``, routed to the Raspberry Pi header
 - Two Pmod ports, an Arduino shield connector, a Raspberry Pi header, HDMI in/out and audio codec,
@@ -30,6 +31,10 @@ Supported Features
 ==================
 
 .. zephyr:board-supported-hw::
+
+GEM0 is enabled by default. The GEM driver has no pinctrl support, so the RGMII and MDIO
+multiplexing is left to the PS initialization performed by the boot loader. GEM1 exists in
+the SoC but is not routed to anything on this board: its pins carry USB0 instead.
 
 The LEDs, push buttons and slide switches of the PYNQ-Z2 are wired to the programmable logic, not to
 the processing system MIO pins. They are therefore not available to Zephyr unless a matching

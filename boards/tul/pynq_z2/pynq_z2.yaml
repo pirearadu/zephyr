@@ -12,5 +12,6 @@ ram: 524288
 supported:
   - gpio
   - i2c
+  - netif:eth
   - serial
 vendor: tul
