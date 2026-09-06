@@ -25,10 +25,7 @@ properties:
       output is enabled, which the driver only does for a timeout that
       installs a callback.
 
-  clock-frequency:
-    type: int
+  clocks:
     required: true
     description: |
-      Frequency in Hz of the clock feeding the watchdog's prescaler. This is
-      the CPU_1x clock unless the SLCR selects an external or PL clock, which
-      this driver does not do.
+      The clock feeding the watchdog's prescaler.

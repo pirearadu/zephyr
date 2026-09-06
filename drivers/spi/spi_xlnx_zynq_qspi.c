@@ -7,6 +7,7 @@
 #define DT_DRV_COMPAT xlnx_zynq_qspi_1_0
 
 #include <zephyr/device.h>
+#include <zephyr/drivers/clock_control.h>
 #include <zephyr/drivers/spi.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/device_mmio.h>
@@ -97,7 +98,8 @@ LOG_MODULE_REGISTER(spi_xlnx_zynq_qspi, CONFIG_SPI_LOG_LEVEL);
 
 struct spi_xlnx_zynq_qspi_config {
 	DEVICE_MMIO_ROM;
-	uint32_t clock_frequency;
+	const struct device *clock_dev;
+	clock_control_subsys_t clock_subsys;
 };
 
 struct spi_xlnx_zynq_qspi_data {
@@ -361,9 +363,11 @@ static int qspi_configure(const struct device *dev, const struct spi_config *con
 {
 	const struct spi_xlnx_zynq_qspi_config *dev_config = dev->config;
 	struct spi_xlnx_zynq_qspi_data *data = dev->data;
+	uint32_t reference;
 	uint32_t divider;
 	uint32_t baud;
 	uint32_t reg;
+	int err;
 
 	if (spi_context_configured(&data->ctx, config)) {
 		return 0;
@@ -416,6 +420,12 @@ static int qspi_configure(const struct device *dev, const struct spi_config *con
 		return -EINVAL;
 	}
 
+	err = clock_control_get_rate(dev_config->clock_dev, dev_config->clock_subsys, &reference);
+	if (err != 0) {
+		LOG_ERR("%s: cannot read the reference clock (err %d)", dev->name, err);
+		return err;
+	}
+
 	/*
 	 * The divider field selects a power of two between 2 and 256. Round the
 	 * requested frequency down, so the resulting SCLK frequency never
@@ -423,15 +433,15 @@ static int qspi_configure(const struct device *dev, const struct spi_config *con
 	 */
 	baud = 0U;
 	for (divider = QSPI_BAUD_DIV_MIN; divider < QSPI_BAUD_DIV_MAX; divider <<= 1) {
-		if ((dev_config->clock_frequency / divider) <= config->frequency) {
+		if ((reference / divider) <= config->frequency) {
 			break;
 		}
 		baud++;
 	}
 
-	if ((dev_config->clock_frequency / divider) > config->frequency) {
+	if ((reference / divider) > config->frequency) {
 		LOG_ERR("%s: cannot reach %u Hz from a %u Hz reference clock", dev->name,
-			config->frequency, dev_config->clock_frequency);
+			config->frequency, reference);
 		return -EINVAL;
 	}
 
@@ -451,7 +461,7 @@ static int qspi_configure(const struct device *dev, const struct spi_config *con
 	data->ctx.config = config;
 
 	LOG_DBG("%s: SCLK %u Hz (reference clock %u Hz divided by %u)", dev->name,
-		dev_config->clock_frequency / divider, dev_config->clock_frequency, divider);
+		reference / divider, reference, divider);
 
 	return 0;
 }
@@ -627,7 +637,8 @@ static DEVICE_API(spi, spi_xlnx_zynq_qspi_api) = {
 #define SPI_XLNX_ZYNQ_QSPI_INIT(n)                                                                 \
 	static const struct spi_xlnx_zynq_qspi_config spi_xlnx_zynq_qspi_config_##n = {            \
 		DEVICE_MMIO_ROM_INIT(DT_DRV_INST(n)),                                              \
-		.clock_frequency = DT_INST_PROP(n, clock_frequency),                               \
+		.clock_dev = DEVICE_DT_GET(DT_INST_CLOCKS_CTLR(n)),                                \
+		.clock_subsys = (clock_control_subsys_t)(uintptr_t)DT_INST_CLOCKS_CELL(n, id),     \
 	};                                                                                         \
                                                                                                    \
 	static struct spi_xlnx_zynq_qspi_data spi_xlnx_zynq_qspi_data_##n = {                      \

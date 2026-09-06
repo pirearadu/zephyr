@@ -7,6 +7,7 @@
 #define DT_DRV_COMPAT cdns_wdt_r1p2
 
 #include <zephyr/device.h>
+#include <zephyr/drivers/clock_control.h>
 #include <zephyr/drivers/watchdog.h>
 #include <zephyr/irq.h>
 #include <zephyr/kernel.h>
@@ -60,7 +61,8 @@ LOG_MODULE_REGISTER(wdt_cdns, CONFIG_WDT_LOG_LEVEL);
 
 struct wdt_cdns_config {
 	DEVICE_MMIO_ROM;
-	uint32_t clock_frequency;
+	const struct device *clock_dev;
+	clock_control_subsys_t clock_subsys;
 	void (*irq_config)(void);
 };
 
@@ -111,15 +113,24 @@ static void wdt_cdns_write_mode(const struct device *dev, uint32_t bits)
  *                division ratio, in their register positions
  * @retval 0 on success
  * @retval -EINVAL The timeout is longer than the counter can express
+ * @retval -errno as reported when reading the rate of the input clock
  */
 static int wdt_cdns_control_for_timeout(const struct device *dev, uint32_t timeout,
 					uint32_t *control)
 {
 	const struct wdt_cdns_config *config = dev->config;
 	uint64_t cycles;
+	uint32_t rate;
 	uint32_t clksel;
+	int err;
 
-	cycles = ((uint64_t)timeout * (uint64_t)config->clock_frequency) / 1000U;
+	err = clock_control_get_rate(config->clock_dev, config->clock_subsys, &rate);
+	if (err != 0) {
+		LOG_ERR("%s: cannot read the input clock (err %d)", dev->name, err);
+		return err;
+	}
+
+	cycles = ((uint64_t)timeout * (uint64_t)rate) / 1000U;
 
 	for (clksel = 0U; clksel <= WDT_CLKSEL_MAX; clksel++) {
 		uint64_t counts = DIV_ROUND_UP(cycles, WDT_PRESCALER(clksel));
@@ -308,6 +319,11 @@ static int wdt_cdns_init(const struct device *dev)
 {
 	const struct wdt_cdns_config *config = dev->config;
 
+	if (!device_is_ready(config->clock_dev)) {
+		LOG_ERR("%s: clock controller not ready", dev->name);
+		return -ENODEV;
+	}
+
 	DEVICE_MMIO_MAP(dev, K_MEM_CACHE_NONE);
 
 	if (IS_ENABLED(CONFIG_WDT_DISABLE_AT_BOOT)) {
@@ -336,7 +352,8 @@ static DEVICE_API(wdt, wdt_cdns_api) = {
                                                                                                    \
 	static const struct wdt_cdns_config wdt_cdns_config_##n = {                                \
 		DEVICE_MMIO_ROM_INIT(DT_DRV_INST(n)),                                              \
-		.clock_frequency = DT_INST_PROP(n, clock_frequency),                               \
+		.clock_dev = DEVICE_DT_GET(DT_INST_CLOCKS_CTLR(n)),                                \
+		.clock_subsys = (clock_control_subsys_t)(uintptr_t)DT_INST_CLOCKS_CELL(n, id),     \
 		.irq_config = wdt_cdns_irq_config_##n,                                             \
 	};                                                                                         \
                                                                                                    \

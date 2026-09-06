@@ -26,10 +26,10 @@ properties:
       polling and leaves the interrupt masked, so the property is only there to
       describe the hardware.
 
-  clock-frequency:
+  clocks:
     required: true
     description: |
-      Frequency in Hz of the QSPI reference clock (QSPI_CLK) feeding the
-      controller. The SCLK frequency requested by a device on the bus is
-      derived from it by a power-of-two divider between 2 and 256, rounded
-      down to the closest frequency that does not exceed the request.
+      The QSPI reference clock (QSPI_CLK) feeding the controller. The SCLK
+      frequency requested by a device on the bus is derived from it by a
+      power-of-two divider between 2 and 256, rounded down to the closest
+      frequency that does not exceed the request.
